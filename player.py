@@ -3,7 +3,7 @@ from utils import SpriteSheet
 
 
 class Player(pg.sprite.Sprite):
-    speed = 5
+    speed = 8
 
     def __init__(self, sprite_sheet_path, pos):
         """Variable control"""

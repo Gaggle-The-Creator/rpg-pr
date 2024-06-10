@@ -7,7 +7,7 @@ res = Path(sys.argv[0]).parent / "res"
 
 
 class SpriteSheet:
-    """Class for control over sprite sheets"""
+    """Class for control over sprite sheetss"""
     def __init__(self, fp, scale=1):
         """Loading image form path"""
         self.sheet = pg.image.load(fp).convert_alpha()
