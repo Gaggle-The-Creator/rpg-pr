@@ -8,8 +8,9 @@ class Player(pg.sprite.Sprite):
     def __init__(self, sprite_sheet_path, pos):
         """Variable control"""
         super().__init__()
-        self.sprite_sheet = SpriteSheet(sprite_sheet_path)
-        self.image = self.sprite_sheet.get_image(0, 0, 32, 32)
+        sprite_sheet = SpriteSheet(sprite_sheet_path)
+        self._load_images(sprite_sheet)
+        self.image = self.walk_right[0]
         self.rect = self.image.get_rect()
         self.rect.center = pos
 
@@ -34,3 +35,10 @@ class Player(pg.sprite.Sprite):
         self.velocity *= self.speed
 
         self.rect.center += self.velocity
+
+    def _load_images(self, sheet):
+        w, h = sheet.w // 4, sheet.h // 4
+        self.walk_right = [sheet.get_image(i, h * 2, 32, 32) for i in range(0, w * 4, w)]
+        self.walk_left = [sheet.get_image(i, h, 32, 32) for i in range(0, w * 4, w)]
+        self.walk_up = [sheet.get_image(i, h * 3,  32, 32) for i in range(0, w * 4, w)]
+        self.walk_down = [sheet.get_image(i, 0, 32, 32) for i in range(0, w * 4, w)]
