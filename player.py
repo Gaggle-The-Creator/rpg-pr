@@ -1,14 +1,16 @@
 import pygame as pg
 from utils import SpriteSheet
+from settings import *
 
 
 class Player(pg.sprite.Sprite):
     speed = 8
 
-    def __init__(self, sprite_sheet_path, pos):
+    def __init__(self, game, sprite_sheet_path, pos):
         """Variable control"""
-        super().__init__()
-        sprite_sheet = SpriteSheet(sprite_sheet_path)
+        self._layer = PLAYER_LAYER
+        super().__init__(game.all_sprites)
+        sprite_sheet = SpriteSheet(sprite_sheet_path, scale=2)
         self.animation_len = 4
         self._load_images(sprite_sheet)
         self.image = self.walk_right[0]
@@ -19,7 +21,6 @@ class Player(pg.sprite.Sprite):
         self.frame = 0
         self.animation_cycle = self.walk_right
         self.velocity = pg.Vector2(0, 0)
-
 
     def update(self):
         """Update control"""
@@ -46,10 +47,10 @@ class Player(pg.sprite.Sprite):
 
     def _load_images(self, sheet):
         w, h = sheet.w // self.animation_len, sheet.h // self.animation_len
-        self.walk_right = [sheet.get_image(i, h * 2, 32, 32) for i in range(0, w * 4, w)]
-        self.walk_left = [sheet.get_image(i, h, 32, 32) for i in range(0, w * 4, w)]
-        self.walk_up = [sheet.get_image(i, h * 3,  32, 32) for i in range(0, w * 4, w)]
-        self.walk_down = [sheet.get_image(i, 0, 32, 32) for i in range(0, w * 4, w)]
+        self.walk_right = [sheet.get_image(i, h * 2, w, h) for i in range(0, w * 4, w)]
+        self.walk_left = [sheet.get_image(i, h, w, h) for i in range(0, w * 4, w)]
+        self.walk_up = [sheet.get_image(i, h * 3, w, h) for i in range(0, w * 4, w)]
+        self.walk_down = [sheet.get_image(i, 0, w, h) for i in range(0, w * 4, w)]
 
     def _animate(self, frame_len=100):
         now = pg.time.get_ticks()
