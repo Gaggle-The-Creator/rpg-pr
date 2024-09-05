@@ -18,6 +18,7 @@ class Game:
 
     def new(self):
         self.all_sprites = pg.sprite.LayeredUpdates()
+        self.walls = pg.sprite.Group()
         self.player = Player(game,res / "sprite" / "player_sheet.png", (100, 100))
         self.map = TileMap(self, res / "map"/ "21489107669003fddf5293.96874412map (1).csv", res / "map"/ "2148910766900407bcfce9.26900631rpg_tileset (1).png", 16)
         self.camera = Camera(self.map.width, self.map.height)
@@ -33,10 +34,14 @@ class Game:
     def _draw(self):
         self.screen.fill((255, 255, 255))
         for sprite in self.all_sprites:
-            self.screen.blit(sprite.image, self.camera.apply(sprite))
-
+            self.screen.blit(sprite.image, self.camera.apply(sprite.rect))
+        # self._draw_player_hitbox()
         pg.display.flip()
 
+    def _draw_player_hitbox(self):
+        pg.draw.rect(self.screen, (255, 0, 0), self.camera.apply(self.player.rect))
+        self.screen.blit(self.player.image, self.camera.apply(self.player.rect))
+        pg.draw.rect(self.screen, (0, 0, 255), self.camera.apply(self.player.phys_body))
     def run(self):
         while self.running:
             self.clock.tick(FPS)

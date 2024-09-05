@@ -9,6 +9,7 @@ class Player(pg.sprite.Sprite):
     def __init__(self, game, sprite_sheet_path, pos):
         """Variable control"""
         self._layer = PLAYER_LAYER
+        self.game = game
         super().__init__(game.all_sprites)
         sprite_sheet = SpriteSheet(sprite_sheet_path, scale=2)
         self.animation_len = 4
@@ -16,7 +17,10 @@ class Player(pg.sprite.Sprite):
         self.image = self.walk_right[0]
         self.rect = self.image.get_rect()
         self.rect.center = pos
-
+        self.phys_body = pg.Rect(self.rect.x, self.rect.y,
+                                 self.rect.w * 0.5, self.rect.h * 0.25)
+        self.phys_body.centerx = self.rect.centerx
+        self.phys_body.bottom = self.rect.bottom - 5
         self.last_update = 0
         self.frame = 0
         self.animation_cycle = self.walk_right
@@ -43,7 +47,16 @@ class Player(pg.sprite.Sprite):
 
         self.velocity *= self.speed
 
-        self.rect.center += self.velocity
+        if not self._will_collide():
+            self.rect.center += self.velocity
+            self.phys_body.center += self.velocity
+            
+    def _will_collide(self):
+        target_rect = self.phys_body.move(self.velocity)
+        for tile in self.game.walls:
+            if target_rect.colliderect(tile.rect):
+                return True
+        return False
 
     def _load_images(self, sheet):
         w, h = sheet.w // self.animation_len, sheet.h // self.animation_len
