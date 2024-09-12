@@ -1,4 +1,5 @@
 import pygame as pg
+from message import Message
 from settings import *
 
 
@@ -14,6 +15,8 @@ class NPC(pg.sprite.Sprite):
         self.velocity = pg.Vector2(0,0)
         self.speed = 7
         self.mode = "FOLLOW PLAYER"
+        self.message = Message(game, (pos[0]-80, pos[1]-60), "Hey, frog")
+
 
     def update(self):
         if self.mode == "FOLLOW PLAYER":
@@ -31,4 +34,14 @@ class NPC(pg.sprite.Sprite):
 
             if not target_rect.colliderect(self.game.player.rect):
                 self.rect.center += self.speed * self.velocity
+            else:
+                self.mode = "SPEAK"
 
+        elif self.mode == "SPEAK":
+            if self.rect.colliderect(self.game.player):
+                if not self.message.groups():
+                    self.message.rect.topleft = (self.rect.x - 80, self.rect.y - 60)
+                    self.message.add(self.game.all_sprites)
+                    self.message.print()
+            elif self.message.groups():
+                self.message.kill()

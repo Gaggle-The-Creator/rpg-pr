@@ -7,6 +7,7 @@ from map import TileMap
 from map import Camera
 from NPC import NPC
 
+
 class Game:
     def __init__(self):
         pg.init()
@@ -16,15 +17,16 @@ class Game:
         pg.display.set_icon(pg.image.load(res / "sprite" / "frog.png"))
         self.running = True
 
-
     def new(self):
 
         self.all_sprites = pg.sprite.LayeredUpdates()
         self.walls = pg.sprite.Group()
-        self.player = Player(game,res / "sprite" / "player_sheet.png", (100, 100))
-        self.map = TileMap(self, res / "map"/ "21489107669003fddf5293.96874412map (1).csv", res / "map"/ "2148910766900407bcfce9.26900631rpg_tileset (1).png", 16)
-        self.npc = NPC(self, (100, 100), self.map.image_list[124])
+        self.player = Player(game, res / "sprite" / "player_sheet.png", (100, 100))
+        self.map = TileMap(self, res / "map" / "21489107669003fddf5293.96874412map (1).csv",
+                           res / "map" / "2148910766900407bcfce9.26900631rpg_tileset (1).png", 16)
+        self.npc = NPC(self, (400, 200), self.map.image_list[124])
         self.camera = Camera(self.map.width, self.map.height)
+
     def _events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -45,6 +47,7 @@ class Game:
         pg.draw.rect(self.screen, (255, 0, 0), self.camera.apply(self.player.rect))
         self.screen.blit(self.player.image, self.camera.apply(self.player.rect))
         pg.draw.rect(self.screen, (0, 0, 255), self.camera.apply(self.player.phys_body))
+
     def run(self):
         while self.running:
             self.clock.tick(FPS)
