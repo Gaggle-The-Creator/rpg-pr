@@ -15,8 +15,8 @@ class TileMap:
 
     def __init__(self, game, csv_path, image_path, img_tile_size):
         data_list = self._csv_to_list(csv_path)
-        image_list = self._parse_image(image_path, img_tile_size)
-        self._load_tiles(game, data_list, image_list)
+        self.image_list = self._parse_image(image_path, img_tile_size)
+        self._load_tiles(game, data_list, self.image_list)
         self.width = len(data_list[0]) * TILE_SIZE
         self.height = len(data_list) * TILE_SIZE
 

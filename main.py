@@ -5,6 +5,7 @@ from settings import *
 from player import Player
 from map import TileMap
 from map import Camera
+from NPC import NPC
 
 class Game:
     def __init__(self):
@@ -17,10 +18,12 @@ class Game:
 
 
     def new(self):
+
         self.all_sprites = pg.sprite.LayeredUpdates()
         self.walls = pg.sprite.Group()
         self.player = Player(game,res / "sprite" / "player_sheet.png", (100, 100))
         self.map = TileMap(self, res / "map"/ "21489107669003fddf5293.96874412map (1).csv", res / "map"/ "2148910766900407bcfce9.26900631rpg_tileset (1).png", 16)
+        self.npc = NPC(self, (100, 100), self.map.image_list[124])
         self.camera = Camera(self.map.width, self.map.height)
     def _events(self):
         for event in pg.event.get():
