@@ -15,7 +15,7 @@ class NPC(pg.sprite.Sprite):
         self.velocity = pg.Vector2(0,0)
         self.speed = 7
         self.mode = "FOLLOW PLAYER"
-        self.message = Message(game, (pos[0]-80, pos[1]-60), "Hey, frog")
+        self.message = Message(game, (pos[0]-80, pos[1]-60), "Hey, frog!")
 
 
     def update(self):
@@ -39,9 +39,7 @@ class NPC(pg.sprite.Sprite):
 
         elif self.mode == "SPEAK":
             if self.rect.colliderect(self.game.player):
-                if not self.message.groups():
-                    self.message.rect.topleft = (self.rect.x - 80, self.rect.y - 60)
-                    self.message.add(self.game.all_sprites)
-                    self.message.print()
+                self.message.rect.center = self.rect.centerx - 80, self.rect.centery - 60
+                self.message.print()
             elif self.message.groups():
-                self.message.kill()
+                self.message.reset()
