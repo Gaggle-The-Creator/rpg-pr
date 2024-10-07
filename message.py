@@ -8,6 +8,7 @@ class Message(pg.sprite.Sprite):
         self._layer = MESSAGE_LAYER
         super().__init__(game.all_sprites)
         self.game = game
+        self.pos = pos
 
 
         self.text = text
@@ -38,6 +39,18 @@ class Message(pg.sprite.Sprite):
         self.current_symbol = 0
         self.display_text = ""
         self.kill()
+
+    def set_text(self, text):
+        self.reset()
+        self.text = text
+        text_surf, text_rect = self.font.render(self.text)
+        self.image = pg.Surface((text_rect.w + 40, text_rect.y + 25), pg.SRCALPHA)
+
+        self.rect = self.image.get_rect(center=self.pos)
+        self.border = pg.Rect((0, 0), self.rect.size)
+        self.border.w = text_rect.w + 20
+
+
 
 
 

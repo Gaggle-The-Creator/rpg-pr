@@ -1,61 +1,89 @@
-import csv
+
+import json
 import pygame as pg
 from settings import *
+import pytmx
+from utils import res
+import NPC
+
 
 
 class TileMap:
-    WALL_IDS = [1, 2, 3, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-                18, 19, 20, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
-                35, 36, 37, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
-                52, 53, 54, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67,
-                69, 70, 75, 76, 77, 78, 79, 81, 82, 83, 84, 92, 93, 94,
-                95, 96, 97, 98, 99, 100, 101, 107, 108, 109, 110, 111, 112, 113,
-                114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 130,
-                131, 132, 133, 134, 135]
 
-    def __init__(self, game, csv_path, image_path, img_tile_size):
-        data_list = self._csv_to_list(csv_path)
-        self.image_list = self._parse_image(image_path, img_tile_size)
-        self._load_tiles(game, data_list, self.image_list)
-        self.width = len(data_list[0]) * TILE_SIZE
-        self.height = len(data_list) * TILE_SIZE
 
-    @staticmethod
-    def _csv_to_list(fp):
-        with open(fp) as f:
-            reader = csv.reader(f)
-            data = list(reader)
+    def __init__(self, game, image_path,  map_: str, next_map: str):
 
-        return data
 
-    @staticmethod
-    def _parse_image(fp, img_tile_size):
-        image = pg.image.load(fp).convert()
-        image_list = []
+        # self.width = len(data_list[0]) * TILE_SIZE
+        # self.height = len(data_list) * TILE_SIZE
+        self.game = game
+        self.tmx_map = pytmx.load_pygame(res / "map" / map_)
+        self.width = self.tmx_map.tilewidth * self.tmx_map.width
+        self.height = self.tmx_map.tileheight * self.tmx_map.height
 
-        if TILE_SIZE != img_tile_size:
-            scale = TILE_SIZE // img_tile_size
-            image = pg.transform.scale_by(image, scale)
 
-        width, height = image.get_size()
-        for y in range(0, height, TILE_SIZE):
-            for x in range(0, width, TILE_SIZE):
-                tile = image.subsurface(x, y, TILE_SIZE, TILE_SIZE)
-                image_list.append(tile)
-        return image_list
+        self._tiles = pg.sprite.Group()
+        self._load_tiles(game)
+        self.next_map = next_map
+        # self._load_npc()
 
-    @staticmethod
-    def _load_tiles(game, data, images):
-        for y, row in enumerate(data):
-            for x, index in enumerate(row):
-                wall = int(index) in TileMap.WALL_IDS
-                Tile(game, x, y, images[int(index)], wall)
+
+
+
+
+    def _load_tiles(self, game):
+        i = 0
+        for layer in self.tmx_map:
+            for x, y, gid in layer:
+                tile = self.tmx_map.get_tile_image_by_gid(gid)
+                if tile:
+                    if layer.name == "player":
+                        self.game.player.rect.center = x * TILE_SIZE, y * TILE_SIZE
+                        self.game.player.phys_body.center = x * TILE_SIZE, y * TILE_SIZE
+                    elif layer.name == "onion":
+                        NPC.Onion(self.game, (x * TILE_SIZE, y * TILE_SIZE))
+                    elif layer.name == "frog":
+                        NPC.FrogSoldier(self.game, (x * TILE_SIZE, y * TILE_SIZE))
+
+
+                    else:
+                        self._tiles.add(Tile(game, x,y,tile, layer=i))
+
+            i += 1
+
+    def _load_npc(self):
+        with open(res/"map"/"map_enemies.json", "r") as f:
+            data = json.load(f)
+
+        for enemy in data["npc"]:
+            if enemy["name"] == "Onion":
+                NPC.Onion(self.game, enemy["pos"])
+            if enemy["name"] == "FrogSoldier":
+                NPC.FrogSoldier(self.game, enemy["pos"])
+
+    def _unload_tiles(self):
+        for sprite in self._tiles:
+            if not hasattr(sprite, "is_player"):
+                sprite.kill()
+
+
+    def change_level(self):
+        self._unload_tiles()
+        # self.game.player.rect.center = 100, 100
+        # self.game.player.phys_body.center = 100, 100
+
+        self.tmx_map = pytmx.load_pygame(res / "map" / self.next_map)
+        self.width = self.tmx_map.tilewidth * self.tmx_map.width
+        self.height = self.tmx_map.tileheight * self.tmx_map.height
+        self._load_tiles(self.game)
+
+
 
 
 class Tile(pg.sprite.Sprite):
-    def __init__(self, game, x, y, image, is_wall=False):
-        self._layer = GROUND_LAYER
-        if is_wall:
+    def __init__(self, game, x, y, image, layer=GROUND_LAYER):
+        self._layer = layer
+        if layer == 2:
             super().__init__(game.all_sprites, game.walls)
         else:
              super().__init__(game.all_sprites)

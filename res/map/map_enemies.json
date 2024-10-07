@@ -1,0 +1,25 @@
+{
+  "npc": [
+    {
+      "name": "Onion",
+      "pos": [
+        200,
+        200
+      ]
+    },
+    {
+      "name": "FrogSoldier",
+      "pos": [
+        400,
+        200
+      ]
+    },
+    {
+      "name": "FrogSoldier",
+      "pos": [
+        400,
+        300
+      ]
+    }
+  ]
+}

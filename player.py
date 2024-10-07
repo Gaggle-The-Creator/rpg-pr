@@ -1,11 +1,11 @@
 import pygame as pg
 from utils import SpriteSheet
 from settings import *
+import math
 
 
 class Player(pg.sprite.Sprite):
-    speed = 8
-
+    speed = 180
     def __init__(self, game, sprite_sheet_path, pos):
         """Variable control"""
         self._layer = PLAYER_LAYER
@@ -25,6 +25,7 @@ class Player(pg.sprite.Sprite):
         self.frame = 0
         self.animation_cycle = self.walk_right
         self.velocity = pg.Vector2(0, 0)
+        self.is_player = True
 
     def update(self):
         """Update control"""
@@ -45,7 +46,7 @@ class Player(pg.sprite.Sprite):
         if keys[pg.K_d]:
             self.velocity.x = 1
 
-        self.velocity *= self.speed
+        self.velocity *= math.ceil(self.speed * self.game.dt)
 
         if not self._will_collide():
             self.rect.center += self.velocity

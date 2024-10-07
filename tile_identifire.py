@@ -10,7 +10,7 @@ pg.init()
 screen = pg.display.set_mode((w * 2, h * 2))
 
 font = pg.freetype.Font(None, 16)
-image = pg.image.load(res / "map" / "2148910766900407bcfce9.26900631rpg_tileset (1).png")
+image = pg.image.load(res / "map" / "tile_set.png")
 image = pg.transform.scale(image, (w * 2, h * 2))
 
 i = 0

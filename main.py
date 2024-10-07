@@ -6,26 +6,30 @@ from player import Player
 from map import TileMap
 from map import Camera
 from NPC import NPC
+from NPC import FrogSoldier
+from NPC import Onion
 
 
 class Game:
     def __init__(self):
         pg.init()
         self.clock = pg.time.Clock()
+
         self.screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pg.display.set_caption(GAME_TITLE)
         pg.display.set_icon(pg.image.load(res / "sprite" / "frog.png"))
         self.running = True
+        self.dt = 0
 
     def new(self):
 
         self.all_sprites = pg.sprite.LayeredUpdates()
         self.walls = pg.sprite.Group()
         self.player = Player(game, res / "sprite" / "player_sheet.png", (100, 100))
-        self.map = TileMap(self, res / "map" / "21489107669003fddf5293.96874412map (1).csv",
-                           res / "map" / "2148910766900407bcfce9.26900631rpg_tileset (1).png", 16)
-        self.npc = NPC(self, (400, 200), self.map.image_list[124])
+        self.map = TileMap(self,res / "map"/ "tile_set.png", map_="frog_map.tmx", next_map="desert_map.tmx")
+
         self.camera = Camera(self.map.width, self.map.height)
+
 
     def _events(self):
         for event in pg.event.get():
@@ -35,6 +39,11 @@ class Game:
     def _update(self):
         self.all_sprites.update()
         self.camera.update(self.player)
+        # self.fps()
+
+        if self.player.rect.y > self.map.height:
+            self.player.center = (100, 100)
+            self.map.change_level()
 
     def _draw(self):
         self.screen.fill((255, 255, 255))
@@ -50,10 +59,14 @@ class Game:
 
     def run(self):
         while self.running:
-            self.clock.tick(FPS)
+            self.dt = self.clock.tick(FPS) / 1000
             self._events()
             self._update()
             self._draw()
+
+    def fps(self):
+        print("FPS:", int(self.clock.get_fps()))
+
 
 
 if __name__ == "__main__":
