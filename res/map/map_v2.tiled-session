@@ -1,0 +1,53 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "Objects.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "desert_map.tmx": {
+            "scale": 0.8876562499999999,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 342.4749163879599,
+                "y": 314.87414187643026
+            }
+        },
+        "frog_map.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 417.33333333333337,
+                "y": 312.66666666666663
+            }
+        },
+        "tile_set_v2.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "C:/Users/anaco/PycharmProjects/pythonProject/rpg-pr/res/map",
+    "map.lastUsedFormat": "tmx",
+    "openFiles": [
+        "frog_map.tmx",
+        "tile_set_v2.tsx",
+        "desert_map.tmx",
+        "Objects.tsx"
+    ],
+    "project": "map_v2.tiled-project",
+    "recentFiles": [
+        "frog_map.tmx",
+        "tile_set_v2.tsx",
+        "desert_map.tmx",
+        "Objects.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx"
+}
