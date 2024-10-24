@@ -62,7 +62,7 @@ class TileMap:
                 NPC.FrogSoldier(self.game, enemy["pos"])
 
     def _unload_tiles(self):
-        for sprite in self._tiles:
+        for sprite in self.game.all_sprites:
             if not hasattr(sprite, "is_player"):
                 sprite.kill()
 

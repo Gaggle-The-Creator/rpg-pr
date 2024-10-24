@@ -1,3 +1,5 @@
+import os
+
 import pygame as pg
 
 from utils import res
@@ -21,6 +23,7 @@ class Game:
         self.running = True
         self.dt = 0
 
+        self.music_tracks = [file for file in os.listdir(res / "music") if file[-3:] == "wav"]
     def new(self):
 
         self.all_sprites = pg.sprite.LayeredUpdates()
@@ -28,6 +31,8 @@ class Game:
         self.player = Player(game, res / "sprite" / "player_sheet.png", (100, 100))
         self.map = TileMap(self,res / "map"/ "tile_set.png", map_="frog_map.tmx", next_map="desert_map.tmx")
 
+        pg.mixer.music.load(res / "music" / self.music_tracks[1])
+        pg.mixer.music.play()
         self.camera = Camera(self.map.width, self.map.height)
 
 

@@ -1,5 +1,9 @@
+import os
+import random
+
 import pygame as pg
 from utils import SpriteSheet
+from utils import res
 from settings import *
 import math
 
@@ -14,6 +18,7 @@ class Player(pg.sprite.Sprite):
         sprite_sheet = SpriteSheet(sprite_sheet_path, scale=2)
         self.animation_len = 4
         self._load_images(sprite_sheet)
+        self._load_sounds()
         self.image = self.walk_right[0]
         self.rect = self.image.get_rect()
         self.rect.center = pos
@@ -58,7 +63,8 @@ class Player(pg.sprite.Sprite):
             if target_rect.colliderect(tile.rect):
                 return True
         return False
-
+    def _load_sounds(self):
+        self.walking_sound = [pg.mixer.Sound(res / "sounds"/"Nature Sounds Pack"/"Footstep"/ file) for file in os.listdir(res / "sounds"/"Nature Sounds Pack"/"Footstep")]
     def _load_images(self, sheet):
         w, h = sheet.w // self.animation_len, sheet.h // self.animation_len
         self.walk_right = [sheet.get_image(i, h * 2, w, h) for i in range(0, w * 4, w)]
@@ -69,6 +75,7 @@ class Player(pg.sprite.Sprite):
     def _animate(self, frame_len=100):
         now = pg.time.get_ticks()
         if now - self.last_update > frame_len and self.velocity.length() > 0:
+            random.choice(self.walking_sound).play()
             self.last_update = now
             if self.velocity.y > 0:
                 self.animation_cycle = self.walk_down
