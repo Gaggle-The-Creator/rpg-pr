@@ -143,6 +143,7 @@ class Onion(pg.sprite.Sprite):
         self.game = game
         super().__init__(game.all_sprites)
         self._load_animations()
+        self.walk_len = [100, 100]
         self.image = self.walk_right[0]
         self.rect = self.image.get_rect()
         self.rect.topleft = pos
@@ -195,9 +196,7 @@ class Onion(pg.sprite.Sprite):
         sheet2 = SpriteSheet(res / "sprite" / "Sprite Pack 2" / "1 - Onion Lad" / "Idle (16 x 16).png", scale=2)
         w, h = sheet.w // 2, sheet.h // 1
         self.walk_right = [sheet.get_image(i, 0, w, h) for i in range(0, w * 2, w)]
-        self.walk_right_len = [100, 100]
         self.walk_left = [pg.transform.flip(i, True, False) for i in self.walk_right]
-        self.walk_left_len = [100, 100]
         self.idle = [sheet2.get_image(i, 0, w, h) for i in range(0, w * 2, w)]
         self.idle_len = [800, 100]
 
@@ -208,10 +207,10 @@ class Onion(pg.sprite.Sprite):
 
             if self.velocity.x > 0:
                 self.animation_cycle = self.walk_right
-                self.frame_len = self.walk_right_len
+                self.frame_len = self.walk_len
             elif self.velocity.x < 0:
                 self.animation_cycle = self.walk_left
-                self.frame_len = self.walk_left_len
+                self.frame_len = self.walk_len
             elif self.velocity.x == 0:
                 self.animation_cycle = self.idle
                 self.frame_len = self.idle_len
@@ -220,6 +219,72 @@ class Onion(pg.sprite.Sprite):
             # print(self.frame)
             self.image = self.animation_cycle[self.frame]
 
+
+class PumpkinEnemy(pg.sprite.Sprite):
+    def __init__(self, game, pos):
+        self._layer = PLAYER_LAYER
+        self.game = game
+        super().__init__(game.all_sprites, game.enemies)
+        self._load_animations()
+        self.walk_len = [100, 100]
+        self.image = self.walk_right[0]
+        self.rect = self.image.get_rect()
+        self.rect.topleft = pos
+
+        self.phys_body = pg.Rect(self.rect.x, self.rect.y,
+                                 self.rect.w * 0.5, self.rect.h * 0.25)
+        self.phys_body.centerx = self.rect.centerx
+        self.phys_body.bottom = self.rect.bottom - 5
+
+        self.last_update = 0
+        self.frame = 0
+        self.frame_len = [200]
+        self.animation_cycle = self.walk_right
+        self.velocity = pg.Vector2(0, 0)
+        self.mode = AI_FOLLOW_PLAYER
+
+    def update(self):
+        """Update control"""
+        self._animate()
+
+    def _load_animations(self):
+        sheet = SpriteSheet(res / "sprite" / "Sprite Pack 2" / "4 - Robo Pumpkin" / "Walking (16 x 16).png", scale=2)
+        sheet2 = SpriteSheet(res / "sprite" / "Sprite Pack 2" / "4 - Robo Pumpkin" / "Standing (16 x 16).png", scale=2)
+        sheet3 = SpriteSheet(res / "sprite" / "Sprite Pack 2" / "4 - Robo Pumpkin" / "Hurt (16 x 16).png", scale=2)
+        w, h = sheet.w // 2, sheet.h // 1
+        self.walk_right = [sheet.get_image(i, 0, w, h) for i in range(0, w * 2, w)]
+        self.walk_left = [pg.transform.flip(i, True, False) for i in self.walk_right]
+        self.idle = [sheet2.get_image(0, 0, w, h)]
+        self.idle_len = [800, 100]
+        self.hurt = [sheet3.get_image(0, 0, w, h)]
+        self.hurt_len = [700]
+
+    def _animate(self):
+        now = pg.time.get_ticks()
+        if now - self.last_update > self.frame_len[self.frame]:
+            self.last_update = now
+
+            if self.velocity.x > 0:
+                self.animation_cycle = self.walk_right
+                self.frame_len = self.walk_len
+            elif self.velocity.x < 0:
+                self.animation_cycle = self.walk_left
+                self.frame_len = self.walk_len
+            elif self.velocity.x == 0:
+                self.animation_cycle = self.idle
+                self.frame_len = self.idle_len
+
+            self.frame = (self.frame + 1) % len(self.animation_cycle)
+            # print(self.frame)
+            self.image = self.animation_cycle[self.frame]
     def kill(self):
-        print("killed")
-        super().kill()
+        now = pg.time.get_ticks()
+        if now - self.last_update > self.hurt_len[0]:
+            self.last_update = now
+
+            self.image = self.hurt[0]
+            self.rect.x += 1
+        else:
+            super().kill()
+
+

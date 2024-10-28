@@ -10,6 +10,7 @@ from map import Camera
 from NPC import NPC
 from NPC import FrogSoldier
 from NPC import Onion
+from NPC import PumpkinEnemy
 
 
 class Game:
@@ -28,8 +29,11 @@ class Game:
 
         self.all_sprites = pg.sprite.LayeredUpdates()
         self.walls = pg.sprite.Group()
-        self.player = Player(game, res / "sprite" / "player_sheet.png", (100, 100))
+        self.player = Player(game, res / "sprite" / "Panda.png", (100, 100))
         self.map = TileMap(self,res / "map"/ "tile_set.png", map_="frog_map.tmx", next_map="desert_map.tmx")
+        self.enemies = pg.sprite.Group()
+        PumpkinEnemy(self, (400, 400))
+
 
         pg.mixer.music.load(res / "music" / self.music_tracks[1])
         pg.mixer.music.play()
@@ -49,6 +53,8 @@ class Game:
         if self.player.rect.y > self.map.height:
             self.player.center = (100, 100)
             self.map.change_level()
+
+        pg.sprite.spritecollide(self.player, self.enemies, True)
 
     def _draw(self):
         self.screen.fill((255, 255, 255))
