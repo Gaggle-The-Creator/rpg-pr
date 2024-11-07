@@ -36,6 +36,7 @@ class Game:
 
 
         pg.mixer.music.load(res / "music" / self.music_tracks[1])
+        pg.mixer.music.set_volume(0.1)
         pg.mixer.music.play()
         self.camera = Camera(self.map.width, self.map.height)
 
@@ -54,7 +55,7 @@ class Game:
             self.player.center = (100, 100)
             self.map.change_level()
 
-        pg.sprite.spritecollide(self.player, self.enemies, True)
+
 
     def _draw(self):
         self.screen.fill((255, 255, 255))

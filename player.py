@@ -79,7 +79,8 @@ class Player(pg.sprite.Sprite):
     def _animate(self, frame_len=100):
         now = pg.time.get_ticks()
         if now - self.last_update > self.animation_len[self.frame]:
-            random.choice(self.walking_sound).play()
+            if self.velocity.length() > 0:
+                random.choice(self.walking_sound).play()
             self.last_update = now
             if self.velocity.y > 0:
                 self.animation_cycle = self.walk_down

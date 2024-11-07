@@ -162,6 +162,7 @@ class Onion(pg.sprite.Sprite):
 
     def update(self):
         """Update control"""
+
         self._move()
         self._animate()
 
@@ -198,7 +199,7 @@ class Onion(pg.sprite.Sprite):
         self.walk_right = [sheet.get_image(i, 0, w, h) for i in range(0, w * 2, w)]
         self.walk_left = [pg.transform.flip(i, True, False) for i in self.walk_right]
         self.idle = [sheet2.get_image(i, 0, w, h) for i in range(0, w * 2, w)]
-        self.idle_len = [800, 100]
+        self.idle_len = [600, 100]
 
     def _animate(self):
         now = pg.time.get_ticks()
@@ -221,6 +222,7 @@ class Onion(pg.sprite.Sprite):
 
 
 class PumpkinEnemy(pg.sprite.Sprite):
+    speed = 100
     def __init__(self, game, pos):
         self._layer = PLAYER_LAYER
         self.game = game
@@ -241,10 +243,12 @@ class PumpkinEnemy(pg.sprite.Sprite):
         self.frame_len = [200]
         self.animation_cycle = self.walk_right
         self.velocity = pg.Vector2(0, 0)
-        self.mode = AI_FOLLOW_PLAYER
+        self.mode = AI_IDLE
+        self.hp = 2
 
     def update(self):
         """Update control"""
+        self._move()
         self._animate()
 
     def _load_animations(self):
@@ -252,8 +256,8 @@ class PumpkinEnemy(pg.sprite.Sprite):
         sheet2 = SpriteSheet(res / "sprite" / "Sprite Pack 2" / "4 - Robo Pumpkin" / "Standing (16 x 16).png", scale=2)
         sheet3 = SpriteSheet(res / "sprite" / "Sprite Pack 2" / "4 - Robo Pumpkin" / "Hurt (16 x 16).png", scale=2)
         w, h = sheet.w // 2, sheet.h // 1
-        self.walk_right = [sheet.get_image(i, 0, w, h) for i in range(0, w * 2, w)]
-        self.walk_left = [pg.transform.flip(i, True, False) for i in self.walk_right]
+        self.walk_left = [sheet.get_image(i, 0, w, h) for i in range(0, w * 2, w)]
+        self.walk_right = [pg.transform.flip(i, True, False) for i in self.walk_left]
         self.idle = [sheet2.get_image(0, 0, w, h)]
         self.idle_len = [800, 100]
         self.hurt = [sheet3.get_image(0, 0, w, h)]
@@ -277,6 +281,41 @@ class PumpkinEnemy(pg.sprite.Sprite):
             self.frame = (self.frame + 1) % len(self.animation_cycle)
             # print(self.frame)
             self.image = self.animation_cycle[self.frame]
+
+
+    def _move(self):
+        distance = pg.Vector2(self.game.player.rect.centerx - self.rect.x,
+                              self.game.player.rect.centery - self.rect.y)
+        if distance.length() < 4 * TILE_SIZE:
+            self.mode = AI_FOLLOW_PLAYER
+        else:
+            self.mode = AI_IDLE
+
+        if self.mode == AI_FOLLOW_PLAYER:
+            if not self._will_collide() and distance.length() >s 0:
+                self.velocity = distance.normalize()
+
+            if self._will_collide():
+                self.mode = AI_HURT
+        elif self.mode == AI_HURT:
+            self.hp -= 1
+            self.image = self.hurt[0]
+
+        else:
+            self.velocity.update()
+
+        self.rect.center += self.velocity
+        self.velocity *= math.ceil(self.speed * self.game.dt)
+
+    def _will_collide(self):
+        target_rect = self.phys_body.move(self.velocity)
+        for tile in self.game.walls:
+            if target_rect.colliderect(tile.rect):
+                return True
+        if target_rect.colliderect(self.game.player.rect):
+            return True
+        return False
+
     def kill(self):
         now = pg.time.get_ticks()
         if now - self.last_update > self.hurt_len[0]:
