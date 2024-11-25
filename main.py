@@ -11,6 +11,7 @@ from NPC import NPC
 from NPC import FrogSoldier
 from NPC import Onion
 from NPC import PumpkinEnemy
+from NPC import Crab
 
 
 class Game:
@@ -25,21 +26,25 @@ class Game:
         self.dt = 0
 
         self.music_tracks = [file for file in os.listdir(res / "music") if file[-3:] == "wav"]
+        # UI images
+        self.health_bar = pg.image.load(res / "sprite" / "sp_bar_health_strip12.png")
+        scale = TILE_SIZE // 16
+        self.health_bar = pg.transform.scale_by(self.health_bar, scale)
+        self.health_bar = [self.health_bar.subsurface((i, 0, 64 * scale, 16 * scale)) for i in range(0, 768 * scale, 64 * scale)]
+
     def new(self):
 
         self.all_sprites = pg.sprite.LayeredUpdates()
         self.walls = pg.sprite.Group()
         self.player = Player(game, res / "sprite" / "Panda.png", (100, 100))
-        self.map = TileMap(self,res / "map"/ "tile_set.png", map_="frog_map.tmx", next_map="desert_map.tmx")
+        self.map = TileMap(self, res / "map" / "tile_set.png", map_="frog_map.tmx", next_map="desert_map.tmx")
         self.enemies = pg.sprite.Group()
-        PumpkinEnemy(self, (400, 400))
-
+        Crab(self, (400, 400))
 
         pg.mixer.music.load(res / "music" / self.music_tracks[1])
         pg.mixer.music.set_volume(0.1)
         pg.mixer.music.play()
         self.camera = Camera(self.map.width, self.map.height)
-
 
     def _events(self):
         for event in pg.event.get():
@@ -55,14 +60,18 @@ class Game:
             self.player.center = (100, 100)
             self.map.change_level()
 
-
-
     def _draw(self):
         self.screen.fill((255, 255, 255))
         for sprite in self.all_sprites:
             self.screen.blit(sprite.image, self.camera.apply(sprite.rect))
+            if hasattr(sprite, "hp"):
+                pg.draw.rect(self.screen, (255, 0, 0), (sprite.rect.topleft, (sprite.hp * 8, 8)))
+        self._draw_ui()
         # self._draw_player_hitbox()
         pg.display.flip()
+
+    def _draw_ui(self):
+        self.screen.blit(self.health_bar[self.player.hp], (10, 10))
 
     def _draw_player_hitbox(self):
         pg.draw.rect(self.screen, (255, 0, 0), self.camera.apply(self.player.rect))
@@ -78,7 +87,6 @@ class Game:
 
     def fps(self):
         print("FPS:", int(self.clock.get_fps()))
-
 
 
 if __name__ == "__main__":

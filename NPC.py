@@ -1,8 +1,10 @@
 import pygame as pg
+
 from message import Message
 from settings import *
 from utils import res, SpriteSheet
 import math
+from environment import Explosion
 
 
 class NPC(pg.sprite.Sprite):
@@ -245,6 +247,7 @@ class PumpkinEnemy(pg.sprite.Sprite):
         self.velocity = pg.Vector2(0, 0)
         self.mode = AI_IDLE
         self.hp = 2
+        self.hurt_update = 0
 
     def update(self):
         """Update control"""
@@ -267,11 +270,13 @@ class PumpkinEnemy(pg.sprite.Sprite):
         now = pg.time.get_ticks()
         if now - self.last_update > self.frame_len[self.frame]:
             self.last_update = now
-
-            if self.velocity.x > 0:
+            if self.mode == AI_HURT:
+                self.animation_cycle = self.hurt
+                self.frame_len = self.hurt_len
+            elif self.velocity.x > 0 :
                 self.animation_cycle = self.walk_right
                 self.frame_len = self.walk_len
-            elif self.velocity.x < 0:
+            elif self.velocity.x < 0 :
                 self.animation_cycle = self.walk_left
                 self.frame_len = self.walk_len
             elif self.velocity.x == 0:
@@ -279,30 +284,42 @@ class PumpkinEnemy(pg.sprite.Sprite):
                 self.frame_len = self.idle_len
 
             self.frame = (self.frame + 1) % len(self.animation_cycle)
-            # print(self.frame)
             self.image = self.animation_cycle[self.frame]
 
 
     def _move(self):
-        distance = pg.Vector2(self.game.player.rect.centerx - self.rect.x,
-                              self.game.player.rect.centery - self.rect.y)
-        if distance.length() < 4 * TILE_SIZE:
-            self.mode = AI_FOLLOW_PLAYER
-        else:
-            self.mode = AI_IDLE
 
-        if self.mode == AI_FOLLOW_PLAYER:
-            if not self._will_collide() and distance.length() >s 0:
-                self.velocity = distance.normalize()
+        distance = pg.Vector2(self.game.player.rect.centerx - self.rect.centerx,
+                              self.game.player.rect.centery - self.rect.centery)
+        if not self.hurt_update + self.hurt_len[0] > pg.time.get_ticks():
+            if int(distance.length()) < TILE_SIZE:
+                if self.hp > 0:
+                    self.game.player.getting_dmg(1)
+                    self.mode = AI_HURT
+                else:
+                    self.game.player.getting_dmg(1)
+                    Explosion(self.game, self.rect.center)
+                    self.kill()
 
-            if self._will_collide():
-                self.mode = AI_HURT
-        elif self.mode == AI_HURT:
-            self.hp -= 1
-            self.image = self.hurt[0]
+            elif int(distance.length()) < 4 * TILE_SIZE:
+                self.mode = AI_FOLLOW_PLAYER
+            else:
+                self.mode = AI_IDLE
 
-        else:
-            self.velocity.update()
+            if self.mode == AI_FOLLOW_PLAYER:
+                if distance.length() > 0:
+                     self.velocity = distance.normalize()
+            elif self.mode == AI_HURT:
+                self.hp -= 1
+                self.image = self.hurt[0]
+                self.velocity = -distance.normalize()
+                self.hurt_update = pg.time.get_ticks()
+
+
+            else:
+                self.velocity.update()
+        elif self.velocity.length() > 0:
+            self.velocity = self.velocity.normalize()
 
         self.rect.center += self.velocity
         self.velocity *= math.ceil(self.speed * self.game.dt)
@@ -316,14 +333,99 @@ class PumpkinEnemy(pg.sprite.Sprite):
             return True
         return False
 
-    def kill(self):
-        now = pg.time.get_ticks()
-        if now - self.last_update > self.hurt_len[0]:
-            self.last_update = now
+class Crab(pg.sprite.Sprite):
+    speed = 100
 
-            self.image = self.hurt[0]
-            self.rect.x += 1
-        else:
-            super().kill()
+    def __init__(self, game, pos):
+        self._layer = PLAYER_LAYER
+        self.game = game
+        super().__init__(game.all_sprites, game.enemies)
+        self._load_animations()
+        self.walk_len = [100, 100]
+        self.image = self.walk_animation[0]
+        self.rect = self.image.get_rect()
+        self.rect.topleft = pos
+
+        self.phys_body = pg.Rect(self.rect.x, self.rect.y,
+                                 self.rect.w * 0.5, self.rect.h * 0.25)
+        self.phys_body.centerx = self.rect.centerx
+        self.phys_body.bottom = self.rect.bottom - 5
+
+        self.last_update = 0
+        self.frame = 0
+        self.frame_len = [200]
+        self.animation_cycle = self.walk_animation
+        self.velocity = pg.Vector2(0, 0)
+        self.mode = AI_IDLE
+        self.hp = 6
+        self.hurt_update = 0
+
+    def update(self):
+        """Update control"""
+        if self.hp > 0:
+            self._move()
+            self._animate()
+
+    def _load_animations(self):
+        sheet = SpriteSheet(res / "sprite" / "Sprite Pack 2" / "9 - Snip Snap Crab" / "Movement_(Flip_image_back_and_forth) (32 x 32).png", scale=2)
+        sheet3 = SpriteSheet(res / "sprite" / "Sprite Pack 2" / "9 - Snip Snap Crab" / "Hurt (32 x 32).png", scale=2)
+        w, h = sheet.w, sheet.h
+        self.walk_animation = [sheet.get_image(0,0, w, h)]
+        self.walk_animation.append(pg.transform.flip(self.walk_animation[0], True, False))
+        self.hurt = [sheet3.get_image(0, 0, w, h)]
+        self.hurt_len = [200]
+
+    def _animate(self):
+        now = pg.time.get_ticks()
+        if now - self.last_update > self.frame_len[0]:
+            self.last_update = now
+            if self.mode == AI_HURT:
+                self.animation_cycle = self.hurt
+                self.frame_len = self.hurt_len
+            elif self.velocity.length() > 0:
+                self.animation_cycle = self.walk_animation
+
+            self.frame = (self.frame + 1) % len(self.animation_cycle)
+            self.image = self.animation_cycle[self.frame]
+
+    def _move(self):
+
+        distance = pg.Vector2(self.game.player.rect.centerx - self.rect.centerx,
+                              self.game.player.rect.centery - self.rect.centery)
+        if not self.hurt_update + self.hurt_len[0] > pg.time.get_ticks():
+
+
+
+
+            if self.mode == AI_FOLLOW_PLAYER:
+                if distance.length() > 0:
+                    self.velocity = distance.normalize()
+            elif self.mode == AI_HURT:
+                self.hp -= 1
+                self.image = self.hurt[0]
+                self.velocity.update()
+                self.hurt_update = pg.time.get_ticks()
+
+
+            else:
+                self.velocity.update()
+            if int(distance.length()) < 4 * TILE_SIZE:
+                self.mode = AI_FOLLOW_PLAYER
+            else:
+                self.mode = AI_IDLE
+        elif self.velocity.length() > 0:
+            self.velocity = self.velocity.normalize()
+
+        self.rect.center += self.velocity
+        self.velocity *= math.ceil(self.speed * self.game.dt)
+
+    def _will_collide(self):
+        target_rect = self.phys_body.move(self.velocity)
+        for tile in self.game.walls:
+            if target_rect.colliderect(tile.rect):
+                return True
+        if target_rect.colliderect(self.game.player.rect):
+            return True
+        return False
 
 

@@ -13,4 +13,7 @@ Run main.py
 ## Credits
 
 frog - https://opengameart.org/content/frog-soldier 
+explosion - https://opengameart.org/content/explosion-3
 tileset - https://opengameart.org/content/lpc-tile-atlas 
+weapons - https://opengameart.org/content/roguelikerpg-items
+health_bar - https://opengameart.org/content/health-bar-01

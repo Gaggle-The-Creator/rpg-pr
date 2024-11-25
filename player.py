@@ -6,6 +6,7 @@ from utils import SpriteSheet
 from utils import res
 from settings import *
 import math
+from weapon import Fists
 
 
 class Player(pg.sprite.Sprite):
@@ -34,11 +35,22 @@ class Player(pg.sprite.Sprite):
         self.animation_cycle = self.walk_right
         self.velocity = pg.Vector2(0, 0)
         self.is_player = True
+        self.hp = 11
+
+        self.weapon = Fists(game)
 
     def update(self):
         """Update control"""
         self._move()
+        self._attack()
         self._animate(250)
+
+    def _attack(self):
+        mouse = pg.mouse.get_pressed()
+        if mouse[0]:
+            self.weapon.attack(self.rect, pg.mouse.get_pos())
+        else:
+            self.weapon.image = self.weapon.idle_image
 
     def _move(self):
         """Move control"""
@@ -68,6 +80,7 @@ class Player(pg.sprite.Sprite):
         return False
     def _load_sounds(self):
         self.walking_sound = [pg.mixer.Sound(res / "sounds"/"Nature Sounds Pack"/"Footstep"/ file) for file in os.listdir(res / "sounds"/"Nature Sounds Pack"/"Footstep")]
+
     def _load_images(self, sheet):
         w, h = sheet.w // 5, sheet.h // 8
         self.walk_right = [sheet.get_image(i, h * 3, w, h) for i in range(0, w * 3, w)]
@@ -102,5 +115,7 @@ class Player(pg.sprite.Sprite):
             self.frame = (self.frame + 1) % len(self.animation_cycle)
 
             self.image = self.animation_cycle[self.frame]
-
+    def getting_dmg(self, dmg=1):
+        self.hp -= dmg
+        print(self.hp)
 
