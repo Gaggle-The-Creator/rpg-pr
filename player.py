@@ -1,12 +1,13 @@
 import os
 import random
+from tokenize import endpats
 
 import pygame as pg
 from utils import SpriteSheet
 from utils import res
 from settings import *
 import math
-from weapon import Fists
+from weapon import Fists, Ball
 
 
 class Player(pg.sprite.Sprite):
@@ -32,6 +33,9 @@ class Player(pg.sprite.Sprite):
         self.phys_body.bottom = self.rect.bottom - 5
         self.last_update = 0
         self.frame = 0
+        self.balls = pg.sprite.Group()
+        self.last_attack = pg.time.get_ticks()
+        self.attack_speed = 100
         self.animation_cycle = self.walk_right
         self.velocity = pg.Vector2(0, 0)
         self.is_player = True
@@ -45,10 +49,16 @@ class Player(pg.sprite.Sprite):
         self._attack()
         self._animate(250)
 
+
     def _attack(self):
         mouse = pg.mouse.get_pressed()
         if mouse[0]:
             self.weapon.attack(self.rect, pg.mouse.get_pos())
+        elif mouse[2] and  pg.time.get_ticks() - self.last_attack > self.attack_speed:
+            self.balls.add(Ball(self.rect, pg.mouse.get_pos(), self.game))
+            self.last_attack = pg.time.get_ticks()
+
+
         else:
             self.weapon.image = self.weapon.idle_image
 

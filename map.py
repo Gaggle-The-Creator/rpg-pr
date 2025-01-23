@@ -1,10 +1,13 @@
 
 import json
+import random
+
 import pygame as pg
 from settings import *
 import pytmx
 from utils import res
 import NPC
+import power_ups
 
 
 
@@ -44,13 +47,12 @@ class TileMap:
                         NPC.Onion(self.game, (x * TILE_SIZE, y * TILE_SIZE))
                     elif layer.name == "frog":
                         NPC.FrogSoldier(self.game, (x * TILE_SIZE, y * TILE_SIZE))
-
-
                     else:
                         self._tiles.add(Tile(game, x,y,tile, layer=i))
 
             i += 1
-
+        x, y = random.randint(2, self.tmx_map.width - 2), random.randint(2, self.tmx_map.height - 2)
+        power_ups.PowerupHealth(self.game, x, y)
     def _load_npc(self):
         with open(res/"map"/"map_enemies.json", "r") as f:
             data = json.load(f)

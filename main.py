@@ -7,7 +7,7 @@ from settings import *
 from player import Player
 from map import TileMap
 from map import Camera
-from NPC import NPC
+from NPC import BaseNPC
 from NPC import FrogSoldier
 from NPC import Onion
 from NPC import PumpkinEnemy
@@ -36,10 +36,13 @@ class Game:
 
         self.all_sprites = pg.sprite.LayeredUpdates()
         self.walls = pg.sprite.Group()
+        self.power_ups = pg.sprite.Group()
+
         self.player = Player(game, res / "sprite" / "Panda.png", (100, 100))
         self.map = TileMap(self, res / "map" / "tile_set.png", map_="frog_map.tmx", next_map="desert_map.tmx")
         self.enemies = pg.sprite.Group()
         Crab(self, (400, 400))
+        PumpkinEnemy(self,(300, 300))
 
         pg.mixer.music.load(res / "music" / self.music_tracks[1])
         pg.mixer.music.set_volume(0.1)
@@ -54,6 +57,18 @@ class Game:
     def _update(self):
         self.all_sprites.update()
         self.camera.update(self.player)
+        self.player.balls.update()
+        hits = pg.sprite.groupcollide(self.enemies, self.player.balls, False, True)
+        for hit in hits:
+            hit.get_damage(0.007)
+        heals = pg.sprite.spritecollide(self.player, self.power_ups, True)
+        for heal in heals:
+            heal.use()
+
+        for npc in self.all_sprites:
+            if isinstance(npc, FrogSoldier):
+                npc.say("e")
+
         # self.fps()
 
         if self.player.rect.y > self.map.height:
@@ -66,6 +81,7 @@ class Game:
             self.screen.blit(sprite.image, self.camera.apply(sprite.rect))
             if hasattr(sprite, "hp"):
                 pg.draw.rect(self.screen, (255, 0, 0), (sprite.rect.topleft, (sprite.hp * 8, 8)))
+
         self._draw_ui()
         # self._draw_player_hitbox()
         pg.display.flip()
