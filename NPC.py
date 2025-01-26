@@ -305,6 +305,7 @@ class Crab(BaseNPC):
         super().__init__(game, pos, game.enemies)
 
         self._load_animations()
+        self.animation_cycle = self.walk_animation
         self.image = self.animation_cycle.get_current_frame()
         self.rect = self.image.get_rect()
         self.rect.topleft = pos
@@ -315,7 +316,7 @@ class Crab(BaseNPC):
         self.phys_body.bottom = self.rect.bottom - 5
 
         self.frame_len = [200]
-        self.animation_cycle = self.walk_animation
+
         self.mode = AI_IDLE
         self.hp = 6
         self.hurt_update = 0
@@ -335,47 +336,43 @@ class Crab(BaseNPC):
         sheet3 = SpriteSheet(res / "sprite" / "Sprite Pack 2" / "9 - Snip Snap Crab" / "Hurt (32 x 32).png", scale=2)
         w, h = sheet.w, sheet.h
         self.walk_animation = Animation(
-            res / "sprite" / "Sprite Pack 2" / "9 - Snip Snap Crab" / "Movement_(Flip_image_back_and_forth (32 x 32).png",
-            2,
-            1, 0, 0, 2, 90, scale=2)
-        self.walk_animation.flip()
-        self.hurt = Animation(res / "sprite" / "Sprite Pack 2" / "9 - Snip Snap Crab" / "Hurt (32 x 32).png", 1, 1, 0,
-                              0, 1,
-                              700, scale=2)
+            res / "sprite" / "Sprite Pack 2" / "9 - Snip Snap Crab" / "Movement_(Flip_image_back_and_forth) (32 x 32).png",
+            1,1, 0, 0, 1, 250, scale=2)
+        self.walk_animation.add_frame(pg.transform.flip(self.walk_animation.frames[0],True, False), 90)
+
+        self.hurt = Animation(res / "sprite" / "Sprite Pack 2" / "9 - Snip Snap Crab" / "Hurt (32 x 32).png", 1, 1, 0,0, 1,700, scale=2)
+
 
     def _animate(self):
-        now = pg.time.get_ticks()
-        if now - self.last_update > self.frame_len[0]:
-            self.last_update = now
             if self.mode == AI_HURT:
                 self.animation_cycle = self.hurt
-                self.frame_len = self.hurt
             elif self.velocity.length() > 0:
                 self.animation_cycle = self.walk_animation
-                self.image = self.animation_cycle.get_current_frame()
+            self.image = self.animation_cycle.get_current_frame()
 
     def _move(self):
 
         distance = pg.Vector2(self.game.player.rect.centerx - self.rect.centerx,
                               self.game.player.rect.centery - self.rect.centery)
-        if not self.hurt_update + self.animation_cycle.get_current_frame() > pg.time.get_ticks():
 
-            if self.mode == AI_FOLLOW_PLAYER:
-                if distance.length() > 0:
+        if self.mode == AI_FOLLOW_PLAYER:
+               if distance.length() > 0:
                     self.velocity = distance.normalize()
-            elif self.mode == AI_HURT:
-                self.image = self.animation_cycle.get_current_frame()
-                self.velocity.update()
-                self.hurt_update = pg.time.get_ticks()
+        elif self.mode == AI_HURT:
+            self.velocity.update()
+            self.hurt_update = pg.time.get_ticks()
 
 
-            else:
-                self.velocity.update()
-            if int(distance.length()) < 4 * TILE_SIZE:
+        else:
+            self.velocity.update()
+        if int(distance.length()) < 4 * TILE_SIZE:
+            if self.hurt_update < pg.time.get_ticks() - 500:
                 self.mode = AI_FOLLOW_PLAYER
             else:
-                self.mode = AI_IDLE
-        elif self.velocity.length() > 0:
+                self.mode = AI_HURT
+        else:
+            self.mode = AI_IDLE
+        if self.velocity.length() > 0:
             self.velocity = self.velocity.normalize()
 
         self.rect.center += self.velocity

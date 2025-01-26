@@ -39,3 +39,8 @@ class Animation:
 
         return self.frames[self.frame]
 
+    def add_frame(self, frame, time):
+        self.frames.append(frame)
+        self.animation_len += 1
+        self.frame_len.append(time)
+
